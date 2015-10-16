@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -15,7 +16,7 @@ namespace BattleShipServer
         private int _port;
         private IPAddress _ip;
         private TcpListener serverSocket;
-        private List<TcpClient> _clientList;
+        private List<ClientConnection> _clientList;
         private TcpClient client;
         private const int NUMBER_OF_PLAYER_REQUIRED = 2;
         private bool endOfGame = false;
@@ -27,7 +28,7 @@ namespace BattleShipServer
         {
             try
             {
-                _clientList = new List<TcpClient>();
+                _clientList = new List<ClientConnection>();
                 _port = port;
                 _ip = IPAddress.Parse(adresseIp);
                 serverSocket = new TcpListener(_ip, port);
@@ -51,7 +52,7 @@ namespace BattleShipServer
 
                     do
                     {
-                        _clientList.Add(serverSocket.AcceptTcpClient());
+                        _clientList.Add(new ClientConnection(serverSocket.AcceptTcpClient()));
                         Console.WriteLine("client connected");
 
                     } while (_clientList.Count < NUMBER_OF_PLAYER_REQUIRED);
@@ -99,14 +100,15 @@ namespace BattleShipServer
             {
                 for (int i = 0; i < _clientList.Count; i++)
                 {
-                    clientStream = _clientList[i].GetStream();
+                    clientStream = _clientList[i].getSocket().GetStream();
                     bytes = clientStream.Read(buffer, 0, buffer.Length);
                     position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
 
                     if (!String.IsNullOrEmpty(position))
                     {
                         joueurAyantPlacerLeurBateau++;
-                        Console.WriteLine(joueurAyantPlacerLeurBateau);
+                        _clientList[i].getShipManger().StringToShipPosition(position);
+                       Point[,] foo = _clientList[i].getShipManger().ShipPositions;
                     }
                     if (joueurAyantPlacerLeurBateau == _clientList.Count)
                     {
@@ -124,7 +126,7 @@ namespace BattleShipServer
             Byte[] messages;
             for (int i = 0; i < _clientList.Count; i++)
             {
-                clientStream = _clientList[i].GetStream();
+                clientStream = _clientList[i].getSocket().GetStream();
                 messages = System.Text.Encoding.ASCII.GetBytes("START: Debut de la partie");
                 clientStream.Write(messages, 0, messages.Length);
             }
@@ -134,7 +136,7 @@ namespace BattleShipServer
 
             for (int i = 0; i < _clientList.Count; i++)
             {
-                _clientList[i].Close();
+                _clientList[i].getSocket().Close();
             }
             serverSocket.Stop();
         }
