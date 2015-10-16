@@ -109,11 +109,11 @@
             this.LBL_Status.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LBL_Status.Location = new System.Drawing.Point(3, 10);
             this.LBL_Status.Name = "LBL_Status";
-            this.LBL_Status.Size = new System.Drawing.Size(218, 25);
+            this.LBL_Status.Size = new System.Drawing.Size(270, 25);
             this.LBL_Status.TabIndex = 0;
-            this.LBL_Status.Text = "En attente du serveur";
+            this.LBL_Status.Text = "En attente de l\'autre joueur";
             // 
-            // Form1
+            // FormGame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -121,7 +121,7 @@
             this.Controls.Add(this.PNL_InfoBar);
             this.Controls.Add(this.GRB_EnemyFleet);
             this.Controls.Add(this.GRB_AllyFleet);
-            this.Name = "Form1";
+            this.Name = "FormGame";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.FormGame_Load);
             ((System.ComponentModel.ISupportInitialize)(this.DGV_AllyFleet)).EndInit();

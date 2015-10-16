@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,17 +15,24 @@ namespace BattleShipClient
     {
         private bool isPlacingShip = false;
         private ShipManager shipManager = new ShipManager();
+        private ServerConnection connection;
 
         public FormGame()
         {
             InitializeComponent();
+            buildDGV(DGV_AllyFleet);
+            buildDGV(DGV_EnemyFleet);
+
+            DGV_AllyFleet.Enabled = DGV_EnemyFleet.Enabled = false;
+        }
+
+        public void SetConnection(ServerConnection conn)
+        {
+            connection = conn;
         }
 
         private void FormGame_Load(object sender, EventArgs e)
         {
-            buildDGV(DGV_AllyFleet);
-            buildDGV(DGV_EnemyFleet);
-            UpdateStatusLabel_ShipPlacement();
         }
 
         private void buildDGV(DataGridView DGV)
@@ -65,7 +73,7 @@ namespace BattleShipClient
                         isPlacingShip = false;
                         shipManager.CurrentShipIndex++;
 
-                        if (shipManager.CurrentShipIndex == ShipManager.ShipTypes.SIZEOF_SHIPNAMES)
+                        if (shipManager.CurrentShipIndex == ShipManager.ShipTypes.SIZEOF_SHIPTYPES)
                         {
                             LBL_Status.Text = "En attente de l'autre joueur";
                         }
@@ -73,7 +81,6 @@ namespace BattleShipClient
                         {
                             UpdateStatusLabel_ShipPlacement();
                         }
-                        
                     }
                     else if (DGV_AllyFleet[col, row].Style.BackColor == Color.Blue)
                     {
@@ -92,6 +99,13 @@ namespace BattleShipClient
             }
 
             DGV_AllyFleet.ClearSelection();
+
+            if (shipManager.CurrentShipIndex == ShipManager.ShipTypes.SIZEOF_SHIPTYPES)
+            {
+                connection.SendShipPosition(shipManager);
+                DGV_AllyFleet.Enabled = false;
+                LBL_Status.Text = "Envoi des bateaux au serveur";
+            }
         }
 
         private void placeShipMarkers(int col, int row, int shipSize)
@@ -184,6 +198,16 @@ namespace BattleShipClient
             LBL_Status.Text = "Placez le " + shipManager.ShipNames[(int)shipManager.CurrentShipIndex];
         }
 
+        public void StartGame()
+        {
+            UpdateStatusLabel_ShipPlacement();
+            DGV_AllyFleet.Enabled = true;
+        }
 
+
+        public void FIRE(int col, int row)
+        {
+            DGV_EnemyFleet[col, row].Style.BackColor = Color.Red;
+        }
     }
 }
