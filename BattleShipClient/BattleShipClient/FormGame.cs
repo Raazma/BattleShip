@@ -104,7 +104,7 @@ namespace BattleShipClient
             {
                 connection.SendShipPosition(shipManager);
                 DGV_AllyFleet.Enabled = false;
-                LBL_Status.Text = "Envoi des bateaux au serveur";
+                LBL_Status.Text = "En attente de l'autre joueur";
             }
         }
 
@@ -198,7 +198,7 @@ namespace BattleShipClient
             LBL_Status.Text = "Placez le " + shipManager.ShipNames[(int)shipManager.CurrentShipIndex];
         }
 
-        public void StartGame()
+        public void StartShipPlacement()
         {
             UpdateStatusLabel_ShipPlacement();
             DGV_AllyFleet.Enabled = true;

@@ -55,5 +55,15 @@ namespace BattleShipClient
                     index++;
                 } 
         }
+
+        public bool HasRemainingShip()
+        {
+            for (int c = 0; c < (int)ShipTypes.SIZEOF_SHIPTYPES; c++)
+                for (int r = 0; r < (int)ShipTypes.SIZEOF_SHIPTYPES; r++)
+                    if (ShipPositions[c, r].X != -1) 
+                        return true;
+
+            return false;
+        }
     }
 }

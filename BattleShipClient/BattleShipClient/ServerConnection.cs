@@ -40,7 +40,7 @@ namespace BattleShipClient
                     switch (instruction)
                     {
                         case "START" :
-                            gameClient.StartGame();
+                            gameClient.StartShipPlacement();
                             break;
                         case "FIRE":
                             ClientFire(param);
