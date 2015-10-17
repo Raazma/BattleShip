@@ -50,7 +50,7 @@
             this.TB_AdresseIP.Name = "TB_AdresseIP";
             this.TB_AdresseIP.Size = new System.Drawing.Size(100, 20);
             this.TB_AdresseIP.TabIndex = 1;
-            this.TB_AdresseIP.Text = "172.17.104.114";
+            this.TB_AdresseIP.Text = "192.168.0.110";
             // 
             // TB_Port
             // 

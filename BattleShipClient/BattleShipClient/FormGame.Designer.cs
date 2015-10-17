@@ -93,6 +93,7 @@
             this.DGV_EnemyFleet.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.DGV_EnemyFleet.Size = new System.Drawing.Size(352, 322);
             this.DGV_EnemyFleet.TabIndex = 0;
+            this.DGV_EnemyFleet.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DGV_EnemyFleet_CellClick);
             // 
             // PNL_InfoBar
             // 

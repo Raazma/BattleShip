@@ -42,9 +42,6 @@ namespace BattleShipClient
                         case "START" :
                             gameClient.StartShipPlacement();
                             break;
-                        case "FIRE":
-                            ClientFire(param);
-                            break;
                     }
                 } while (serverMessage != "END");
             }
@@ -58,14 +55,6 @@ namespace BattleShipClient
             MessageBox.Show("End of communication");
         }
 
-
-
-        private void ClientFire(String param)
-        {
-            int col = int.Parse(param.Split(',')[0]);
-            int row = int.Parse(param.Split(',')[1]);
-            gameClient.FIRE(col, row);
-        }
 
         public void SendShipPosition(ShipManager ships)
         {
