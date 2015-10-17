@@ -64,7 +64,28 @@ namespace BattleShipServer
             return false;
         }
 
+	public ShipTypes HasHitShip(int col, int row)
+        {
+            ShipTypes ship;
 
+            for (ship = ShipTypes.PORTEAVIONS; ship < ShipTypes.SIZEOF_SHIPTYPES; ship++)
+                for (int p = 0; p < (int)ShipTypes.SIZEOF_SHIPTYPES; p++)
+                    if (ShipPositions[(int)ship, p].X == col && ShipPositions[(int)ship, p].Y == row)
+                    {
+                        ShipPositions[(int)ship, p].X = ShipPositions[(int)ship, p].Y = -1;
+                        return ship;
+                    }
+
+            return ship;
+        }
+
+        public bool HasSunkenShip(ShipTypes ship)
+        {
+            for (int p = 0; p < (int)ShipTypes.SIZEOF_SHIPTYPES; p++)
+                if (ShipPositions[(int)ship, p].X != -1)
+                    return false;
+
+            return true;
+        }
     }
-
 }
