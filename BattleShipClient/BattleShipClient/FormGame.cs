@@ -315,5 +315,17 @@ namespace BattleShipClient
                 LBL_Status.Text = "Vous avez raté";
             }
         }
+
+        private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("Êtes-vous sûr de vouloir quitter ?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                connection.StopThread();
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }

@@ -123,7 +123,8 @@
             this.Controls.Add(this.GRB_EnemyFleet);
             this.Controls.Add(this.GRB_AllyFleet);
             this.Name = "FormGame";
-            this.Text = "Form1";
+            this.Text = "BattleShip";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormGame_FormClosing);
             this.Load += new System.EventHandler(this.FormGame_Load);
             ((System.ComponentModel.ISupportInitialize)(this.DGV_AllyFleet)).EndInit();
             this.GRB_AllyFleet.ResumeLayout(false);
