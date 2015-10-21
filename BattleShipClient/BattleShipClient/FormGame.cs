@@ -38,6 +38,18 @@ namespace BattleShipClient
         {
         }
 
+        private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("Êtes-vous sûr de vouloir quitter ?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                connection.StopThread();
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
         private void buildDGV(DataGridView DGV)
         {
             DGV.ColumnHeadersHeight = 20;
@@ -257,75 +269,63 @@ namespace BattleShipClient
             int col = e.ColumnIndex;
 
             DGV_EnemyFleet.ClearSelection();
-            DGV_EnemyFleet.Enabled = false;
 
-            if (DGV_EnemyFleet[col, row].Style.BackColor == Properties.Settings.Default.HitColor ||
-                DGV_EnemyFleet[col, row].Style.BackColor == Properties.Settings.Default.MissColor)
+            if (row != -1 && col != -1)
             {
-                LBL_Status.Text = "Vous avez déjà tiré à cet endroit";
-            }
-            else
-            {
-                // SEND SHOT TO SERVER 
-
-                HandleShot(col, row); // TO REPLACE WITH SERVER COMMAND
-            }
-
-
-            if (!shipManager.HasRemainingShip())
-                LBL_Status.Text = "Fin de la partie";
-
-            DGV_EnemyFleet.Enabled = true;
-        }
-
-        // METHODE POUR LE SERVEUR
-        private void HandleShot(int col, int row)
-        {
-            // ShipManager from OtherPlayer
-            ShipManager.ShipTypes shipHit = shipManager.HasHitShip(col, row);
-
-            if (shipHit != ShipManager.ShipTypes.SIZEOF_SHIPTYPES)
-            {
-                PlayHitAnimation(col, row, DGV_EnemyFleet);
-                if (shipManager.HasSunkenShip(shipHit))
+                if (DGV_EnemyFleet[col, row].Style.BackColor == Properties.Settings.Default.HitColor ||
+                    DGV_EnemyFleet[col, row].Style.BackColor == Properties.Settings.Default.MissColor)
                 {
-                    /* SERVER
-                     * CurrentPlayer ENEMY_SUNK:ShipName;col,row
-                     * OtherPlayer ALLY_SUNK:ShipName;col,row
-                     * */
-                    LBL_Status.Text = "Vous avez coulé le " + shipManager.ShipNames[(int)shipHit];
+                    LBL_Status.Text = "Vous avez déjà tiré à cet endroit";
                 }
                 else
                 {
-                    /* SERVER
-                     * CurrentPlayer ENEMY_HIT:col,row
-                     * OtherPlayer ALLY_HIT:col,row
-                     * */
-                    LBL_Status.Text = "Vous avez touché un navire";
+                    DGV_EnemyFleet.Enabled = false;
+                    connection.SendShot(col, row);
                 }
-            }
-            else
-            {
-                /* SERVER
-                 * CurrentPlayer ENEMY_MISS:col,row
-                 * OtherPlayer ALLY_MISS:col,row
-                 * */
-                PlayMissAnimation(col, row, DGV_EnemyFleet);
-                DGV_EnemyFleet[col, row].Style.BackColor = Properties.Settings.Default.MissColor;
-                LBL_Status.Text = "Vous avez raté";
             }
         }
 
-        private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
+        public void StartTurn()
         {
-            if (MessageBox.Show("Êtes-vous sûr de vouloir quitter ?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                connection.StopThread();
-            }
-            else
-            {
-                e.Cancel = true;
-            }
+            DGV_EnemyFleet.Enabled = true;
+            LBL_Status.Text = "C'est à votre tour !";
+        }
+
+        public void EnemySunk(String ship, int col, int row)
+        {
+            PlayHitAnimation(col, row, DGV_EnemyFleet);
+            LBL_Status.Text = "Vous avez coulé le " + ship + " ennemi !";
+        }
+
+        public void AllySunk(String ship, int col, int row)
+        {
+            PlayHitAnimation(col, row, DGV_AllyFleet);
+            LBL_Status.Text = "Votre " + ship + "a été coulé !";
+        }
+
+        public void EnemyHit(int col, int row)
+        {
+            PlayHitAnimation(col, row, DGV_EnemyFleet);
+            LBL_Status.Text = "Vous avez touché un navire !";
+        }
+
+        public void AllyHit(int col, int row)
+        {
+            PlayHitAnimation(col, row, DGV_AllyFleet);
+            LBL_Status.Text = "Votre navire a été touché !";
+        }
+
+        public void EnemyMiss(int col, int row)
+        {
+            PlayMissAnimation(col, row, DGV_EnemyFleet);
+            DGV_EnemyFleet[col, row].Style.BackColor = Properties.Settings.Default.MissColor;
+            LBL_Status.Text = "Vous avez raté";
+        }
+
+        public void AllyMiss(int col, int row)
+        {
+            PlayMissAnimation(col, row, DGV_AllyFleet);
+            LBL_Status.Text = "Votre ennemi a raté";
         }
     }
 }
