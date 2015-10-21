@@ -86,6 +86,14 @@ namespace BattleShipClient
                                 row = int.Parse(param.Split(',')[1]);
                                 gameClient.AllyMiss(col, row);
                                 break;
+                            case "LOST":
+                                gameClient.GameLost();
+                                IsRunning = false;
+                                break;
+                            case "WON":
+                                gameClient.GameWon();
+                                IsRunning = false;
+                                break;
                             case "END":
                                 IsRunning = false;
                                 break;

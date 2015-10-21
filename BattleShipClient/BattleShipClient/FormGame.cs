@@ -327,5 +327,17 @@ namespace BattleShipClient
             PlayMissAnimation(col, row, DGV_AllyFleet);
             LBL_Status.Text = "Votre ennemi a raté";
         }
+
+        public void GameLost()
+        {
+            LBL_Status.Text = "Vous avez perdu !";
+            LBL_Status.ForeColor = Color.Red;
+        }
+
+        public void GameWon()
+        {
+            LBL_Status.Text = "Vous avez gagné !";
+            LBL_Status.ForeColor = Color.Green;
+        }
     }
 }

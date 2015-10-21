@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="SeaColor" Type="System.Drawing.Color" Scope="User">
-      <Value Profile="(Default)">Aquamarine</Value>
+      <Value Profile="(Default)">Aqua</Value>
     </Setting>
     <Setting Name="ShipColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">Black</Value>
