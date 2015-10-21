@@ -14,6 +14,7 @@ namespace BattleShipServer
     {
 
         private int _port;
+        private int currentPlayer;
         private IPAddress _ip;
         private TcpListener serverSocket;
         private List<ClientConnection> _clientList;
@@ -44,49 +45,49 @@ namespace BattleShipServer
         public void StartServer()
         {
 
-            while (!endOfGame)
+            try
             {
-                try
+                serverSocket.Start();
+
+                do
                 {
-                    serverSocket.Start();
+                    _clientList.Add(new ClientConnection(serverSocket.AcceptTcpClient()));
+                    Console.WriteLine("client connected");
 
-                    do
-                    {
-                        _clientList.Add(new ClientConnection(serverSocket.AcceptTcpClient()));
-                        Console.WriteLine("client connected");
+                } while (_clientList.Count < NUMBER_OF_PLAYER_REQUIRED);
 
-                    } while (_clientList.Count < NUMBER_OF_PLAYER_REQUIRED);
+                EnvoieDuMessageDeDebut();
+                WaitForShip();
 
-                    EnvoieDuMessageDeDebut();
-                    WaitForShip();
-
-
-
-                }
-                catch (Exception e)
+                currentPlayer = 0;
+                while (!endOfGame)
                 {
-                    endOfGame = true;
+                    sendMessageToClient(currentPlayer, "YOUR_TURN: turn");
+                    ReadShot();
+                    currentPlayer = (currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED;
+                    Console.WriteLine(currentPlayer);
                 }
+
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+               // endOfGame = true;
+            }
+
             //la partie est fini 
             CloseCommunication();
 
         }
 
-        private void ReadMove()
+        private void ReadShot()
         {
-            //Byte[] buffer = new Byte[100000];
-            //Int32 bytes;
-            //String move;
-            //NetworkStream clientStream;
 
-            //for (int i = 0; i < _clientList.Count; i++)
-            //{
-            //    clientStream = _clientList[i].GetStream();            
-            //    bytes = clientStream.Read(buffer, 0, buffer.Length);
-            //    move = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
-            //}
-
+            clientStream = _clientList[currentPlayer].getSocket().GetStream();
+            bytes = clientStream.Read(buffer, 0, buffer.Length);
+            move = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
+            Console.WriteLine(move.Split(',')[0] + "  " + move.Split(',')[1]);
+            HandleShot((int.Parse(move.Split(',')[0])), int.Parse(move.Split(',')[1]));
 
         }
         private void WaitForShip()
@@ -108,7 +109,7 @@ namespace BattleShipServer
                     {
                         joueurAyantPlacerLeurBateau++;
                         _clientList[i].getShipManger().StringToShipPosition(position);
-                       Point[,] foo = _clientList[i].getShipManger().ShipPositions;
+                        Point[,] foo = _clientList[i].getShipManger().ShipPositions;
                     }
                     if (joueurAyantPlacerLeurBateau == _clientList.Count)
                     {
@@ -140,7 +141,55 @@ namespace BattleShipServer
             }
             serverSocket.Stop();
         }
+        private void HandleShot(int col, int row)
+        {
+            // ShipManager from OtherPlayer
+            int otherPlayer = (currentPlayer + 1 )% NUMBER_OF_PLAYER_REQUIRED;
+            ShipManager otherPlayerShip = _clientList[otherPlayer].getShipManger();
+            ShipManager.ShipTypes shipHit = otherPlayerShip.HasHitShip(col, row);
 
+            if (shipHit != ShipManager.ShipTypes.SIZEOF_SHIPTYPES)
+            {
+
+                if (otherPlayerShip.HasSunkenShip(shipHit))
+                {
+                    /* SERVER
+                     * CurrentPlayer ENEMY_SUNK:ShipName;col,row
+                     * OtherPlayer ALLY_SUNK:ShipName;col,row
+                     * */
+                    sendMessageToClient(currentPlayer, "ENEMY_SUNK:" + otherPlayerShip.ShipNames[(int)shipHit] + ";" + col.ToString() + "," + row.ToString());
+                    sendMessageToClient(otherPlayer, "ALLY_SUNK:" + otherPlayerShip.ShipNames[(int)shipHit] + ";" + col.ToString() + "," + row.ToString());
+                }
+                else
+                {
+                    /* SERVER
+                     * CurrentPlayer ENEMY_HIT:col,row
+                     * OtherPlayer ALLY_HIT:col,row
+                     * */
+                    sendMessageToClient(currentPlayer, "ENEMY_HIT:" + col.ToString() + "," + row.ToString());
+                    sendMessageToClient(otherPlayer, "ALLY_HIT:" + col.ToString() + "," + row.ToString());
+
+                }
+            }
+            else
+            {
+                /* SERVER
+                 * CurrentPlayer ENEMY_MISS:col,row
+                 * OtherPlayer ALLY_MISS:col,row
+                 * */
+
+                sendMessageToClient(currentPlayer, "ENEMY_MISS:" + col.ToString() + "," + row.ToString());
+                sendMessageToClient(otherPlayer, "ALLY_MISS:" + col.ToString() + "," + row.ToString());
+            }
+        }
+        private void sendMessageToClient(int index, String message)
+        {
+            Byte[] messageByte;
+            clientStream = _clientList[index].getSocket().GetStream();
+            messageByte = System.Text.Encoding.ASCII.GetBytes(message);
+            clientStream.Write(messageByte, 0, messageByte.Length);
+
+        }
 
 
 
