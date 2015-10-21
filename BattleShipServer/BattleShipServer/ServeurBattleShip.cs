@@ -65,7 +65,10 @@ namespace BattleShipServer
                     sendMessageToClient(currentPlayer, "YOUR_TURN: turn");
                     ReadShot();
                     currentPlayer = (currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED;
-                    Console.WriteLine(currentPlayer);
+
+                    if (!_clientList[currentPlayer].getShipManger().HasRemainingShip())                   
+                        endOfGame = true;
+                                                        
                 }
 
             }
@@ -76,6 +79,8 @@ namespace BattleShipServer
             }
 
             //la partie est fini 
+            sendMessageToClient(currentPlayer, "LOST: perdu");
+            sendMessageToClient((currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED, "WON: gagner");
             CloseCommunication();
 
         }
@@ -134,12 +139,18 @@ namespace BattleShipServer
         }
         private void CloseCommunication()
         {
-
-            for (int i = 0; i < _clientList.Count; i++)
+            try
             {
-                _clientList[i].getSocket().Close();
+                for (int i = 0; i < _clientList.Count; i++)
+                {
+                    _clientList[i].getSocket().Close();
+                }
+                serverSocket.Stop();
             }
-            serverSocket.Stop();
+            catch (Exception e)
+            {
+                int yolo;
+            }
         }
         private void HandleShot(int col, int row)
         {
