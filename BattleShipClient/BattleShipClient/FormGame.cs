@@ -40,13 +40,16 @@ namespace BattleShipClient
 
         private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (MessageBox.Show("Êtes-vous sûr de vouloir quitter ?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (connection.IsAlive())
             {
-                connection.StopThread();
-            }
-            else
-            {
-                e.Cancel = true;
+                if (MessageBox.Show("Êtes-vous sûr de vouloir quitter ?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    connection.StopThread();
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
             }
         }
 
@@ -338,6 +341,11 @@ namespace BattleShipClient
         {
             LBL_Status.Text = "Vous avez gagné !";
             LBL_Status.ForeColor = Color.Green;
+        }
+
+        public void EnemyDisconnected()
+        {
+            LBL_Status.Text = "Votre ennemi a déclaré forfait !";
         }
     }
 }

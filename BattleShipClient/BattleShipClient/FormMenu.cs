@@ -21,18 +21,32 @@ namespace BattleShipClient
 
         private void BTN_Start_Click(object sender, EventArgs e)
         {
-            Int32 port = int.Parse(TB_Port.Text);
-            TcpClient socket = new TcpClient(TB_AdresseIP.Text, port);
-            FormGame game = new FormGame();
-            ServerConnection conn = new ServerConnection(game, socket);
-            game.SetConnection(conn);
+            try
+            {
+                Int32 port = int.Parse(TB_Port.Text);
+                TcpClient socket = new TcpClient();
+                var result = socket.BeginConnect(TB_AdresseIP.Text, port, null, null);
 
-            Thread serverThread = new Thread(conn.ListenToServer);
-            serverThread.Start();
-            while (!serverThread.IsAlive) ;
-            Thread.Sleep(1);
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
 
-            game.ShowDialog();
+                if (!success)
+                    throw new Exception("Il n'y a pas de serveur disponible");
+
+                FormGame game = new FormGame();
+                ServerConnection conn = new ServerConnection(game, socket);
+                game.SetConnection(conn);
+
+                Thread serverThread = new Thread(conn.ListenToServer);
+                serverThread.Start();
+                while (!serverThread.IsAlive);
+                Thread.Sleep(1);
+
+                game.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

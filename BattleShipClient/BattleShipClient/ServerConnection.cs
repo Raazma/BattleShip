@@ -94,6 +94,10 @@ namespace BattleShipClient
                                 gameClient.GameWon();
                                 IsRunning = false;
                                 break;
+                            case "PLAYER_DISCONNECTED":
+                                gameClient.EnemyDisconnected();
+                                IsRunning = false;
+                                break;
                             case "END":
                                 IsRunning = false;
                                 break;
@@ -101,7 +105,7 @@ namespace BattleShipClient
                     }
                     catch (IOException ioe)
                     {
-                        if (ioe.Message.Contains("closed"))
+                        if (ioe.Message.Contains("fermée") || ioe.Message.Contains("closed"))
                         {
                             MessageBox.Show("Connection to server lost");
                             IsRunning = false;
@@ -117,6 +121,11 @@ namespace BattleShipClient
             stream.Close();
             socket.Close();
             MessageBox.Show("End of communication");
+        }
+
+        public bool IsAlive()
+        {
+            return IsRunning;
         }
 
         public void StopThread()
