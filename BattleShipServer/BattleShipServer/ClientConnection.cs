@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace BattleShipServer
 {
-  
+
     class ClientConnection
     {
         private TcpClient _socket;
         private ShipManager _shipContainer;
 
-       public ClientConnection(TcpClient socket)
+        public ClientConnection(TcpClient socket)
         {
             _socket = socket;
             _shipContainer = new ShipManager();

@@ -60,27 +60,37 @@ namespace BattleShipServer
                 WaitForShip();
 
                 currentPlayer = 0;
+
                 while (!endOfGame)
                 {
                     sendMessageToClient(currentPlayer, "YOUR_TURN: turn");
                     ReadShot();
                     currentPlayer = (currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED;
 
-                    if (!_clientList[currentPlayer].getShipManger().HasRemainingShip())                   
+                    if (!_clientList[currentPlayer].getShipManger().HasRemainingShip())
                         endOfGame = true;
-                                                        
+
                 }
+                sendMessageToClient(currentPlayer, "LOST: perdu");
+                sendMessageToClient((currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED, "WON: gagner");
 
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-               // endOfGame = true;
+                switch (e.Message.Split(':')[0])
+                {
+                    case "PLAYER_DISCONNECTED":
+                        int player = (int.Parse(e.Message.Split(':')[1]) + 1) % NUMBER_OF_PLAYER_REQUIRED;
+                        sendMessageToClient(player, "PLAYER_DISCONNECTED: le joueur est deconnecté");
+                        break;
+                    default:
+                        Console.WriteLine(e.Message);
+                        break;
+                }
+                endOfGame = true;
             }
 
-            //la partie est fini 
-            sendMessageToClient(currentPlayer, "LOST: perdu");
-            sendMessageToClient((currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED, "WON: gagner");
+
             CloseCommunication();
 
         }
@@ -106,9 +116,22 @@ namespace BattleShipServer
             {
                 for (int i = 0; i < _clientList.Count; i++)
                 {
+
                     clientStream = _clientList[i].getSocket().GetStream();
-                    bytes = clientStream.Read(buffer, 0, buffer.Length);
+                    try
+                    {
+                        bytes = clientStream.Read(buffer, 0, buffer.Length);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
+                    }
+                    if (bytes == 0)
+                        throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
+
+
                     position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
+
 
                     if (!String.IsNullOrEmpty(position))
                     {
@@ -122,6 +145,7 @@ namespace BattleShipServer
                         Console.WriteLine("tout les joueur on placer leur bateau");
 
                     }
+
                 }
             }
 
@@ -155,7 +179,7 @@ namespace BattleShipServer
         private void HandleShot(int col, int row)
         {
             // ShipManager from OtherPlayer
-            int otherPlayer = (currentPlayer + 1 )% NUMBER_OF_PLAYER_REQUIRED;
+            int otherPlayer = (currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED;
             ShipManager otherPlayerShip = _clientList[otherPlayer].getShipManger();
             ShipManager.ShipTypes shipHit = otherPlayerShip.HasHitShip(col, row);
 
@@ -195,10 +219,17 @@ namespace BattleShipServer
         }
         private void sendMessageToClient(int index, String message)
         {
-            Byte[] messageByte;
-            clientStream = _clientList[index].getSocket().GetStream();
-            messageByte = System.Text.Encoding.ASCII.GetBytes(message);
-            clientStream.Write(messageByte, 0, messageByte.Length);
+            try
+            {
+                Byte[] messageByte;
+                clientStream = _clientList[index].getSocket().GetStream();
+                messageByte = System.Text.Encoding.ASCII.GetBytes(message);
+                clientStream.Write(messageByte, 0, messageByte.Length);
+            }
+            catch(Exception e)
+            {
+                throw new Exception("PLAYER_DISCONNECTED:" + index.ToString());
+            }
 
         }
 

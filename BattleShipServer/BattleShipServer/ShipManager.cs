@@ -52,7 +52,7 @@ namespace BattleShipServer
                     int row = int.Parse(positions[index].Split(',')[1]);
                     ShipPositions[c, r] = new Point(col, row);
                     index++;
-                } 
+                }
         }
         public bool HasRemainingShip()
         {
@@ -64,7 +64,7 @@ namespace BattleShipServer
             return false;
         }
 
-	public ShipTypes HasHitShip(int col, int row)
+        public ShipTypes HasHitShip(int col, int row)
         {
             ShipTypes ship;
 
