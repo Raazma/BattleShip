@@ -132,6 +132,7 @@ namespace BattleShipClient
                 DGV_AllyFleet.Enabled = false;
                 DGV_EnemyFleet.Enabled = true; // TO REPLACE WITH SERVER COMMAND
                 LBL_Status.Text = "En attente de l'autre joueur";
+                LBL_TurnIndicator.Text = "La partie va démarrer";
             }
         }
 
@@ -283,6 +284,7 @@ namespace BattleShipClient
                 else
                 {
                     DGV_EnemyFleet.Enabled = false;
+                    LBL_TurnIndicator.Text = "C'est au tour de l'ennemi";
                     connection.SendShot(col, row);
                 }
             }
@@ -291,7 +293,7 @@ namespace BattleShipClient
         public void StartTurn()
         {
             DGV_EnemyFleet.Enabled = true;
-            LBL_Status.Text = "C'est à votre tour !";
+            LBL_TurnIndicator.Text = "C'est à votre tour !";
         }
 
         public void EnemySunk(String ship, int col, int row)
