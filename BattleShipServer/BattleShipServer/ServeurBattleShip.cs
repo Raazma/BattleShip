@@ -12,21 +12,31 @@ namespace BattleShipServer
 {
     class ServeurBattleShip
     {
-
+        //le port
         private int _port;
+        //le joueur qui joue actuellement
         private int currentPlayer;
+        //l'adresse de connection
         private IPAddress _ip;
+        //le socket serveur
         private TcpListener serverSocket;
+        //la liste des clients avec leur connection
         private List<ClientConnection> _clientList;
-        private TcpClient client;
+        //constante le nombre de joueur demander pour une partie
         private const int NUMBER_OF_PLAYER_REQUIRED = 2;
+        //bool qui verifie la fin de partie
         private bool endOfGame = false;
+        //le buffer pour lire dans le socket
         Byte[] buffer = new Byte[100000];
+        //les bytes lu dans le socket
         Int32 bytes;
+        //ce que le client a effectuer comme coup
         String move;
+        //la liaison avec le client
         NetworkStream clientStream;
         public ServeurBattleShip(int port, String adresseIp)
         {
+            //construit une liste de client initialise le tcpListener au port et l'adresse Ip voulu
             try
             {
                 _clientList = new List<ClientConnection>();
@@ -37,6 +47,7 @@ namespace BattleShipServer
             }
             catch (Exception e)
             {
+                //la connection a été impossible
                 Console.WriteLine("l'adresse " + adresseIp + " est invalide");
             }
 
@@ -47,36 +58,47 @@ namespace BattleShipServer
 
             try
             {
+                //initialise le serveur
                 serverSocket.Start();
 
                 do
                 {
+                    //attend une connection de client recommence l'attente temps qu'on a pas le nombre de joueur voulu
                     _clientList.Add(new ClientConnection(serverSocket.AcceptTcpClient()));
                     Console.WriteLine("client connected");
 
                 } while (_clientList.Count < NUMBER_OF_PLAYER_REQUIRED);
 
+                //envoie un message a tout les joueurs que la partie peut commencer
                 EnvoieDuMessageDeDebut();
+                //attend que les joueurs place leurs bateaux
                 WaitForShip();
-
+                //le joueur qui doit jouer son tour on commence avec le joueur 1
                 currentPlayer = 0;
 
+                //boucle de jeu
                 while (!endOfGame)
                 {
+                    //envoie du message qui dit au joueur que c'est a son tour de jouer
                     sendMessageToClient(currentPlayer, "YOUR_TURN: turn");
+                    //lecture du coup du joueur
                     ReadShot();
+                    //on passe au joueur suivant
                     currentPlayer = (currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED;
 
+                    //verifie si il reste des bateaux en vie si il en reste pu fin de partie
                     if (!_clientList[currentPlayer].getShipManger().HasRemainingShip())
                         endOfGame = true;
 
                 }
+                //envoie des messages au joueur perdu ou gagné
                 sendMessageToClient(currentPlayer, "LOST: perdu");
                 sendMessageToClient((currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED, "WON: gagner");
 
             }
             catch (Exception e)
             {
+                //il ya eu une perte de connection lors de la partie
                 switch (e.Message.Split(':')[0])
                 {
                     case "PLAYER_DISCONNECTED":
@@ -87,10 +109,11 @@ namespace BattleShipServer
                         Console.WriteLine(e.Message);
                         break;
                 }
+                //on fini la partie pu de connection
                 endOfGame = true;
             }
 
-
+            //on ferme toutes les connections avec les clients
             CloseCommunication();
 
         }
@@ -121,13 +144,14 @@ namespace BattleShipServer
                     try
                     {
                         bytes = clientStream.Read(buffer, 0, buffer.Length);
+                        if (bytes == 0)
+                            throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
                     }
                     catch (Exception e)
                     {
                         throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
                     }
-                    if (bytes == 0)
-                        throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
+
 
 
                     position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
@@ -226,7 +250,7 @@ namespace BattleShipServer
                 messageByte = System.Text.Encoding.ASCII.GetBytes(message);
                 clientStream.Write(messageByte, 0, messageByte.Length);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw new Exception("PLAYER_DISCONNECTED:" + index.ToString());
             }
