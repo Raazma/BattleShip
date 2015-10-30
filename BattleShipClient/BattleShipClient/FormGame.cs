@@ -17,6 +17,7 @@ namespace BattleShipClient
         private bool isPlacingShip = false;
         private ShipManager shipManager = new ShipManager();
         private ServerConnection connection;
+        String lastMessage;
 
         public FormGame()
         {
@@ -132,7 +133,6 @@ namespace BattleShipClient
                 DGV_AllyFleet.Enabled = false;
                 DGV_EnemyFleet.Enabled = true; // TO REPLACE WITH SERVER COMMAND
                 LBL_Status.Text = "En attente de l'autre joueur";
-                LBL_TurnIndicator.Text = "La partie va démarrer";
             }
         }
 
@@ -232,7 +232,6 @@ namespace BattleShipClient
             DGV_AllyFleet.Enabled = true;
         }
 
-
         public void PlayHitAnimation(int col, int row, DataGridView fleet)
         {
             for (int i = 0; i <= 10; i++)
@@ -284,7 +283,6 @@ namespace BattleShipClient
                 else
                 {
                     DGV_EnemyFleet.Enabled = false;
-                    LBL_TurnIndicator.Text = "C'est au tour de l'ennemi";
                     connection.SendShot(col, row);
                 }
             }
@@ -293,7 +291,10 @@ namespace BattleShipClient
         public void StartTurn()
         {
             DGV_EnemyFleet.Enabled = true;
-            LBL_TurnIndicator.Text = "C'est à votre tour !";
+            if (!String.IsNullOrEmpty(lastMessage))
+                LBL_Status.Text = lastMessage + ", c'est à votre tour !";
+            else
+                LBL_Status.Text = "C'est à votre tour !";
         }
 
         public void EnemySunk(String ship, int col, int row)
@@ -305,7 +306,7 @@ namespace BattleShipClient
         public void AllySunk(String ship, int col, int row)
         {
             PlayHitAnimation(col, row, DGV_AllyFleet);
-            LBL_Status.Text = "Votre " + ship + "a été coulé !";
+            lastMessage = "Votre " + ship + " a été coulé";
         }
 
         public void EnemyHit(int col, int row)
@@ -317,7 +318,7 @@ namespace BattleShipClient
         public void AllyHit(int col, int row)
         {
             PlayHitAnimation(col, row, DGV_AllyFleet);
-            LBL_Status.Text = "Votre navire a été touché !";
+            lastMessage = "Votre navire a été touché";
         }
 
         public void EnemyMiss(int col, int row)
@@ -330,7 +331,7 @@ namespace BattleShipClient
         public void AllyMiss(int col, int row)
         {
             PlayMissAnimation(col, row, DGV_AllyFleet);
-            LBL_Status.Text = "Votre ennemi a raté";
+            lastMessage = "Votre ennemi a raté";
         }
 
         public void GameLost()
