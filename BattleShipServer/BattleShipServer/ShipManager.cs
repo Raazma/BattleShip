@@ -19,6 +19,7 @@ namespace BattleShipServer
 
         public ShipManager()
         {
+            //initialise le tableaux de position des bateaux a -1 et met l'index du bateau actuelle a PorteAvions
             ShipPositions = new Point[(int)ShipTypes.SIZEOF_SHIPTYPES, (int)ShipTypes.SIZEOF_SHIPTYPES];
 
             for (int c = 0; c < (int)ShipTypes.SIZEOF_SHIPTYPES; c++)
@@ -30,6 +31,7 @@ namespace BattleShipServer
         }
         public String ShipPostionToString()
         {
+            //Envoie la position Des bateau en une chaine de charactere
             String shipPositionString = "";
 
             for (int c = 0; c < (int)ShipTypes.SIZEOF_SHIPTYPES; c++)
@@ -41,6 +43,7 @@ namespace BattleShipServer
 
         public void StringToShipPosition(String shipPositionString)
         {
+            //prend une chaine de character qui contient la position des bateaux et la positionne dans le tableau de position
             int index = 0;
             ShipPositions = new Point[(int)ShipTypes.SIZEOF_SHIPTYPES, (int)ShipTypes.SIZEOF_SHIPTYPES];
             String[] positions = shipPositionString.Split(';');
@@ -56,6 +59,7 @@ namespace BattleShipServer
         }
         public bool HasRemainingShip()
         {
+            //verification si il reste des bateaux en vie
             for (int c = 0; c < (int)ShipTypes.SIZEOF_SHIPTYPES; c++)
                 for (int r = 0; r < (int)ShipTypes.SIZEOF_SHIPTYPES; r++)
                     if (ShipPositions[c, r].X != -1)
@@ -66,6 +70,7 @@ namespace BattleShipServer
 
         public ShipTypes HasHitShip(int col, int row)
         {
+            //verifie si un bateau a été toucher
             ShipTypes ship;
 
             for (ship = ShipTypes.PORTEAVIONS; ship < ShipTypes.SIZEOF_SHIPTYPES; ship++)
@@ -81,6 +86,7 @@ namespace BattleShipServer
 
         public bool HasSunkenShip(ShipTypes ship)
         {
+            //verifie si un bateau est couler
             for (int p = 0; p < (int)ShipTypes.SIZEOF_SHIPTYPES; p++)
                 if (ShipPositions[(int)ship, p].X != -1)
                     return false;

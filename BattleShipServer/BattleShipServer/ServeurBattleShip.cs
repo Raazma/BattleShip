@@ -120,7 +120,7 @@ namespace BattleShipServer
 
         private void ReadShot()
         {
-
+            //lit le coup du current player et envoie le coup a la fonction Handleshot
             clientStream = _clientList[currentPlayer].getSocket().GetStream();
             bytes = clientStream.Read(buffer, 0, buffer.Length);
             move = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
@@ -130,6 +130,7 @@ namespace BattleShipServer
         }
         private void WaitForShip()
         {
+            //attend que tout les joueurs est placée leurs bateaux et les place dans leur shipManager
 
             int joueurAyantPlacerLeurBateau = 0;
             bool bateauPlacer = false;
@@ -140,10 +141,10 @@ namespace BattleShipServer
                 for (int i = 0; i < _clientList.Count; i++)
                 {
 
-                    clientStream = _clientList[i].getSocket().GetStream();
+                    clientStream = _clientList[i].getSocket().GetStream();//prend le stream
                     try
                     {
-                        bytes = clientStream.Read(buffer, 0, buffer.Length);
+                        bytes = clientStream.Read(buffer, 0, buffer.Length);//lecture des positions
                         if (bytes == 0)
                             throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
                     }
@@ -154,15 +155,16 @@ namespace BattleShipServer
 
 
 
-                    position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
+                    position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);//transforme en String
 
-
+                    //le joueur a placer c'est bateau on les mets dans on ShipManager
                     if (!String.IsNullOrEmpty(position))
                     {
                         joueurAyantPlacerLeurBateau++;
                         _clientList[i].getShipManger().StringToShipPosition(position);
                         Point[,] foo = _clientList[i].getShipManger().ShipPositions;
                     }
+                    //tous les Joueurs ont placé leurs bateaux la partie peu commencer
                     if (joueurAyantPlacerLeurBateau == _clientList.Count)
                     {
                         bateauPlacer = true;
@@ -177,6 +179,7 @@ namespace BattleShipServer
         }
         private void EnvoieDuMessageDeDebut()
         {
+            //envoie le message de debut de partie a tout les joueur dans la liste
             Byte[] messages;
             for (int i = 0; i < _clientList.Count; i++)
             {
@@ -187,6 +190,7 @@ namespace BattleShipServer
         }
         private void CloseCommunication()
         {
+            //ferme toute les connections dans la liste
             try
             {
                 for (int i = 0; i < _clientList.Count; i++)
@@ -197,12 +201,12 @@ namespace BattleShipServer
             }
             catch (Exception e)
             {
-                int yolo;
+               
             }
         }
         private void HandleShot(int col, int row)
         {
-            // ShipManager from OtherPlayer
+            // ShipManager de l'autre joueur
             int otherPlayer = (currentPlayer + 1) % NUMBER_OF_PLAYER_REQUIRED;
             ShipManager otherPlayerShip = _clientList[otherPlayer].getShipManger();
             ShipManager.ShipTypes shipHit = otherPlayerShip.HasHitShip(col, row);
@@ -212,37 +216,28 @@ namespace BattleShipServer
 
                 if (otherPlayerShip.HasSunkenShip(shipHit))
                 {
-                    /* SERVER
-                     * CurrentPlayer ENEMY_SUNK:ShipName;col,row
-                     * OtherPlayer ALLY_SUNK:ShipName;col,row
-                     * */
+                    //le joueur actuelle a couler un bateau enemy on envoie les messages approprier avec la position et le type de bateau a tous les joueurs
                     sendMessageToClient(currentPlayer, "ENEMY_SUNK:" + otherPlayerShip.ShipNames[(int)shipHit] + ";" + col.ToString() + "," + row.ToString());
                     sendMessageToClient(otherPlayer, "ALLY_SUNK:" + otherPlayerShip.ShipNames[(int)shipHit] + ";" + col.ToString() + "," + row.ToString());
                 }
                 else
                 {
-                    /* SERVER
-                     * CurrentPlayer ENEMY_HIT:col,row
-                     * OtherPlayer ALLY_HIT:col,row
-                     * */
+                    //le coup a toucher mais pas de bateau couler  on envoie les message appropier au joueurs avec la position
                     sendMessageToClient(currentPlayer, "ENEMY_HIT:" + col.ToString() + "," + row.ToString());
                     sendMessageToClient(otherPlayer, "ALLY_HIT:" + col.ToString() + "," + row.ToString());
 
                 }
             }
             else
-            {
-                /* SERVER
-                 * CurrentPlayer ENEMY_MISS:col,row
-                 * OtherPlayer ALLY_MISS:col,row
-                 * */
-
+            {               
+                //le coup a rater on envoie les messages appropier a tout les joueurs avec la positions
                 sendMessageToClient(currentPlayer, "ENEMY_MISS:" + col.ToString() + "," + row.ToString());
                 sendMessageToClient(otherPlayer, "ALLY_MISS:" + col.ToString() + "," + row.ToString());
             }
         }
         private void sendMessageToClient(int index, String message)
         {
+            //envoie un message a un joueur a l'index voulue 
             try
             {
                 Byte[] messageByte;
