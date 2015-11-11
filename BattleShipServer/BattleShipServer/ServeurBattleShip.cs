@@ -106,7 +106,8 @@ namespace BattleShipServer
                         sendMessageToClient(player, "PLAYER_DISCONNECTED: le joueur est deconnecté");
                         break;
                     default:
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.ToString());
+                        Console.Read();
                         break;
                 }
                 //on fini la partie pu de connection
@@ -124,6 +125,10 @@ namespace BattleShipServer
             clientStream = _clientList[currentPlayer].getSocket().GetStream();
             bytes = clientStream.Read(buffer, 0, buffer.Length);
             move = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);
+
+            if (move.Equals("DISCONNECT")|| bytes == 0)
+                throw new Exception("PLAYER_DISCONNECTED:" + currentPlayer.ToString());
+
             Console.WriteLine(move.Split(',')[0] + "  " + move.Split(',')[1]);
             HandleShot((int.Parse(move.Split(',')[0])), int.Parse(move.Split(',')[1]));
 
@@ -145,7 +150,8 @@ namespace BattleShipServer
                     try
                     {
                         bytes = clientStream.Read(buffer, 0, buffer.Length);//lecture des positions
-                        if (bytes == 0)
+                        position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);//transforme en String
+                        if (position.Equals("DISCONNECT") || bytes == 0)
                             throw new Exception("PLAYER_DISCONNECTED:" + i.ToString());
                     }
                     catch (Exception e)
@@ -155,7 +161,7 @@ namespace BattleShipServer
 
 
 
-                    position = System.Text.Encoding.ASCII.GetString(buffer, 0, bytes);//transforme en String
+               
 
                     //le joueur a placer c'est bateau on les mets dans on ShipManager
                     if (!String.IsNullOrEmpty(position))

@@ -40,7 +40,6 @@ namespace BattleShipClient
                     try
                     {
                         Byte[] data = new Byte[1024];
-
                         Int32 bytes = stream.Read(data, 0, data.Length);
                         serverMessage = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
                         instruction = serverMessage.Split(':')[0];
@@ -117,10 +116,12 @@ namespace BattleShipClient
             {
                 MessageBox.Show(e.ToString());
             }
-
-            stream.Close();
-            socket.Close();
-            MessageBox.Show("End of communication");
+            finally
+            {
+                stream.Close();
+                socket.Close();
+                MessageBox.Show("End of communication");
+            }
         }
 
         public bool IsAlive()
