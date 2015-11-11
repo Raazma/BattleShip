@@ -14,6 +14,7 @@ namespace BattleShipClient
         FormGame gameClient;
         TcpClient socket;
         NetworkStream stream;
+        String serverMessage;
         private volatile bool IsRunning;
 
         public ServerConnection(FormGame client, TcpClient soc)
@@ -28,7 +29,7 @@ namespace BattleShipClient
         {
             try
             {
-                String serverMessage = "";
+                serverMessage = "";
                 String instruction = "";
                 String param = "";
                 IsRunning = true;
@@ -42,64 +43,67 @@ namespace BattleShipClient
                         Byte[] data = new Byte[1024];
                         Int32 bytes = stream.Read(data, 0, data.Length);
                         serverMessage = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-                        instruction = serverMessage.Split(':')[0];
-                        param = serverMessage.Split(':')[1];
-
-                        switch (instruction)
+                        if (!String.IsNullOrEmpty(serverMessage))
                         {
-                            case "START":
-                                gameClient.StartShipPlacement();
-                                break;
-                            case "YOUR_TURN":
-                                gameClient.StartTurn();
-                                break;
-                            case "ENEMY_SUNK":
-                                ship = param.Split(';')[0];
-                                col = int.Parse(param.Split(';')[1].Split(',')[0]);
-                                row = int.Parse(param.Split(';')[1].Split(',')[1]);
-                                gameClient.EnemySunk(ship, col, row);
-                                break;
-                            case "ALLY_SUNK":
-                                ship = param.Split(';')[0];
-                                col = int.Parse(param.Split(';')[1].Split(',')[0]);
-                                row = int.Parse(param.Split(';')[1].Split(',')[1]);
-                                gameClient.AllySunk(ship, col, row);
-                                break;
-                            case "ENEMY_HIT":
-                                col = int.Parse(param.Split(',')[0]);
-                                row = int.Parse(param.Split(',')[1]);
-                                gameClient.EnemyHit(col, row);
-                                break;
-                            case "ALLY_HIT":
-                                col = int.Parse(param.Split(',')[0]);
-                                row = int.Parse(param.Split(',')[1]);
-                                gameClient.AllyHit(col, row);
-                                break;
-                            case "ENEMY_MISS":
-                                col = int.Parse(param.Split(',')[0]);
-                                row = int.Parse(param.Split(',')[1]);
-                                gameClient.EnemyMiss(col, row);
-                                break;
-                            case "ALLY_MISS":
-                                col = int.Parse(param.Split(',')[0]);
-                                row = int.Parse(param.Split(',')[1]);
-                                gameClient.AllyMiss(col, row);
-                                break;
-                            case "LOST":
-                                gameClient.GameLost();
-                                IsRunning = false;
-                                break;
-                            case "WON":
-                                gameClient.GameWon();
-                                IsRunning = false;
-                                break;
-                            case "PLAYER_DISCONNECTED":
-                                gameClient.EnemyDisconnected();
-                                IsRunning = false;
-                                break;
-                            case "END":
-                                IsRunning = false;
-                                break;
+                            instruction = serverMessage.Split(':')[0];
+                            param = serverMessage.Split(':')[1];
+
+                            switch (instruction)
+                            {
+                                case "START":
+                                    gameClient.StartShipPlacement();
+                                    break;
+                                case "YOUR_TURN":
+                                    gameClient.StartTurn();
+                                    break;
+                                case "ENEMY_SUNK":
+                                    ship = param.Split(';')[0];
+                                    col = int.Parse(param.Split(';')[1].Split(',')[0]);
+                                    row = int.Parse(param.Split(';')[1].Split(',')[1]);
+                                    gameClient.EnemySunk(ship, col, row);
+                                    break;
+                                case "ALLY_SUNK":
+                                    ship = param.Split(';')[0];
+                                    col = int.Parse(param.Split(';')[1].Split(',')[0]);
+                                    row = int.Parse(param.Split(';')[1].Split(',')[1]);
+                                    gameClient.AllySunk(ship, col, row);
+                                    break;
+                                case "ENEMY_HIT":
+                                    col = int.Parse(param.Split(',')[0]);
+                                    row = int.Parse(param.Split(',')[1]);
+                                    gameClient.EnemyHit(col, row);
+                                    break;
+                                case "ALLY_HIT":
+                                    col = int.Parse(param.Split(',')[0]);
+                                    row = int.Parse(param.Split(',')[1]);
+                                    gameClient.AllyHit(col, row);
+                                    break;
+                                case "ENEMY_MISS":
+                                    col = int.Parse(param.Split(',')[0]);
+                                    row = int.Parse(param.Split(',')[1]);
+                                    gameClient.EnemyMiss(col, row);
+                                    break;
+                                case "ALLY_MISS":
+                                    col = int.Parse(param.Split(',')[0]);
+                                    row = int.Parse(param.Split(',')[1]);
+                                    gameClient.AllyMiss(col, row);
+                                    break;
+                                case "LOST":
+                                    gameClient.GameLost();
+                                    IsRunning = false;
+                                    break;
+                                case "WON":
+                                    gameClient.GameWon();
+                                    IsRunning = false;
+                                    break;
+                                case "PLAYER_DISCONNECTED":
+                                    gameClient.EnemyDisconnected();
+                                    IsRunning = false;
+                                    break;
+                                case "END":
+                                    IsRunning = false;
+                                    break;
+                            }
                         }
                     }
                     catch (IOException ioe)
@@ -115,6 +119,7 @@ namespace BattleShipClient
             catch (Exception e)
             {
                 MessageBox.Show(e.ToString());
+                MessageBox.Show("Server Message : " + serverMessage);
             }
             finally
             {
@@ -132,6 +137,7 @@ namespace BattleShipClient
         public void StopThread()
         {
             IsRunning = false;
+            SendDisconnectNotice();
         }
 
         public void SendShipPosition(ShipManager ships)
@@ -145,6 +151,13 @@ namespace BattleShipClient
         {
             String shot = col.ToString() + "," + row.ToString();
             Byte[] data = System.Text.Encoding.ASCII.GetBytes(shot);
+            stream.Write(data, 0, data.Length);
+        }
+
+        private void SendDisconnectNotice()
+        {
+            String notice = "DISCONNECT";
+            Byte[] data = System.Text.Encoding.ASCII.GetBytes(notice);
             stream.Write(data, 0, data.Length);
         }
     }

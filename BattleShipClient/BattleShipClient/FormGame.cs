@@ -349,6 +349,7 @@ namespace BattleShipClient
         public void EnemyDisconnected()
         {
             LBL_Status.Text = "Votre ennemi a déclaré forfait !";
+            DGV_EnemyFleet.Enabled = DGV_AllyFleet.Enabled = false;
         }
     }
 }
