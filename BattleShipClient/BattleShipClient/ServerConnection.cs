@@ -137,7 +137,6 @@ namespace BattleShipClient
             {
                 stream.Close();
                 socket.Close();
-                MessageBox.Show("End of communication");
             }
         }
 
