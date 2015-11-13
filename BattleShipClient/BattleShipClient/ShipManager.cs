@@ -18,17 +18,19 @@ namespace BattleShipClient
 
         public ShipManager()
         {
+            // Initialisation du tableau de position
             ShipPositions = new Point[(int)ShipTypes.SIZEOF_SHIPTYPES, (int)ShipTypes.SIZEOF_SHIPTYPES];
-
             for (int c = 0; c < (int)ShipTypes.SIZEOF_SHIPTYPES; c++)
                 for (int r = 0; r < (int)ShipTypes.SIZEOF_SHIPTYPES; r++)
                     ShipPositions[c, r] = new Point(-1, -1);
 
+            // Le premier bateau à placer est le porte-avions
             CurrentShipIndex = ShipTypes.PORTEAVIONS;
             CurrentShipPosition = new Point();
         }
 
 
+        // Crée une chaîne de caractères représentant les positions des bateaux
         public String ShipPostionToString()
         {
             String shipPositionString = "";
@@ -40,6 +42,7 @@ namespace BattleShipClient
             return shipPositionString;
         }
 
+        // Initialise le tableau de position des bateaux à partir d'une chaîne de caractères
         public void StringToShipPosition(String shipPositionString)
         {
             int index = 0;
@@ -56,6 +59,7 @@ namespace BattleShipClient
                 } 
         }
 
+        // Vérifie s'il reste des bateaux
         public bool HasRemainingShip()
         {
             for (int c = 0; c < (int)ShipTypes.SIZEOF_SHIPTYPES; c++)
@@ -66,6 +70,7 @@ namespace BattleShipClient
             return false;
         }
 
+        // Vérifie si un bateau a été touché. Si c'est le cas, on détruit cette position
         public ShipTypes HasHitShip(int col, int row)
         {
             ShipTypes ship;
@@ -74,13 +79,14 @@ namespace BattleShipClient
                 for (int p = 0; p < (int)ShipTypes.SIZEOF_SHIPTYPES; p++)
                     if (ShipPositions[(int)ship, p].X == col && ShipPositions[(int)ship, p].Y == row)
                     {
-                        ShipPositions[(int)ship, p].X = ShipPositions[(int)ship, p].Y = -1;
+                        ShipPositions[(int)ship, p].X = ShipPositions[(int)ship, p].Y = -1; // Une position de (-1,-1) indique une partie de bateau détruite
                         return ship;
                     }
 
             return ship;
         }
 
+        // Vérifie si le bateau est coulé
         public bool HasSunkenShip(ShipTypes ship)
         {
             for (int p = 0; p < (int)ShipTypes.SIZEOF_SHIPTYPES; p++)
