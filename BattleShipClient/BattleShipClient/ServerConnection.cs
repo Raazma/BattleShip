@@ -122,6 +122,7 @@ namespace BattleShipClient
                         {
                             MessageBox.Show("Connexion au serveur perdue");
                             IsRunning = false;
+                            gameClient.ServerDisconnected();
                         }
 
                         // Sinon, il s'agit d'un timeout, on recommence la boucle
@@ -156,25 +157,47 @@ namespace BattleShipClient
         // Envoie la liste des bateaux au serveur
         public void SendShipPosition(ShipManager ships)
         {
-            String positions = ships.ShipPostionToString();
-            Byte[] data = System.Text.Encoding.ASCII.GetBytes(positions);
-            stream.Write(data, 0, data.Length);
+            try
+            {
+                String positions = ships.ShipPostionToString();
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(positions);
+                stream.Write(data, 0, data.Length);
+            }
+            catch (Exception e)
+            {
+                IsRunning = false;
+            }
         }
 
         // Envoie un tir au serveur
         public void SendShot(int col, int row)
         {
-            String shot = col.ToString() + "," + row.ToString();
-            Byte[] data = System.Text.Encoding.ASCII.GetBytes(shot);
-            stream.Write(data, 0, data.Length);
+            try
+            {
+                String shot = col.ToString() + "," + row.ToString();
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(shot);
+                stream.Write(data, 0, data.Length);
+            }
+            catch (Exception e)
+            {
+                IsRunning = false;
+            }
+
         }
 
         // Envoie un message de déconnexion
         private void SendDisconnectNotice()
         {
-            String notice = "DISCONNECT";
-            Byte[] data = System.Text.Encoding.ASCII.GetBytes(notice);
-            stream.Write(data, 0, data.Length);
+            try
+            {
+                String notice = "DISCONNECT";
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(notice);
+                stream.Write(data, 0, data.Length);
+            }
+            catch (Exception e)
+            {
+                IsRunning = false;
+            }
         }
     }
 }

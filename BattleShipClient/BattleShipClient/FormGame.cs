@@ -146,8 +146,7 @@ namespace BattleShipClient
             if (shipManager.CurrentShipIndex == ShipManager.ShipTypes.SIZEOF_SHIPTYPES)
             {
                 connection.SendShipPosition(shipManager);
-                DGV_AllyFleet.Enabled = false;
-                DGV_EnemyFleet.Enabled = true; 
+                DGV_AllyFleet.Enabled = DGV_EnemyFleet.Enabled = false;
                 LBL_Status.Text = "En attente de l'autre joueur";
             }
         }
@@ -262,6 +261,7 @@ namespace BattleShipClient
         {
             UpdateStatusLabel_ShipPlacement();
             DGV_AllyFleet.Enabled = true;
+            DGV_EnemyFleet.Enabled = false;
         }
 
         // Affiche une animation de bateau touché
@@ -401,6 +401,13 @@ namespace BattleShipClient
         public void EnemyDisconnected()
         {
             LBL_Status.Text = "Votre ennemi a déclaré forfait !";
+            DGV_EnemyFleet.Enabled = DGV_AllyFleet.Enabled = false;
+        }
+
+        // Le serveur s'est déconnecté
+        public void ServerDisconnected()
+        {
+            LBL_Status.Text = "Connexion au serveur perdue !";
             DGV_EnemyFleet.Enabled = DGV_AllyFleet.Enabled = false;
         }
     }
